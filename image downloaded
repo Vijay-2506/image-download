@@ -1,0 +1,49 @@
+<img class="mx-2 img-slide" [src]="image" alt="akrti" class="img-fluid logo" class="">
+                        <button class="btn-down" matTooltipPosition="below" matTooltip="Image Download"
+                            (click)="downloadImage()"><mat-icon>file_download</mat-icon></button>
+
+
+
+images: any[] = [];
+ async downloadImage() {
+    const img = document.querySelectorAll('img');
+
+    let images: string[] = [];
+
+    img.forEach((el: HTMLImageElement) => {
+      if (el.nextElementSibling instanceof HTMLInputElement) {
+        const src = el.src;
+        const img = src.slice(src.lastIndexOf('/') + 1);
+        this.images.push(img);
+      }
+    });
+
+
+    // Get image data
+    const promises: Promise<Blob>[] = this.images.map(async (url: string) => {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return blob;
+    });
+
+    const res: Blob[] = await Promise.all(promises);
+
+    console.log(res);
+
+    // Download images
+    res.forEach((blob: Blob, index: number) => {
+      const a = document.createElement('a');
+      a.download = `img${index}.jpg`;
+
+      const url = URL.createObjectURL(blob);
+      a.href = url;
+
+      a.style.display = 'none';
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+
+      URL.revokeObjectURL(url);
+    });
+  }
